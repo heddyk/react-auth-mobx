@@ -7,7 +7,7 @@
   },
   "extends": [
     "eslint:recommended",
-    "plugin:import/errors",
+    "plugin:import/recommended",
     "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:jsx-a11y/recommended",
@@ -28,7 +28,6 @@
     },
     "import/resolver": {
       "node": {
-        "paths": ["src"],
         "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
     }
