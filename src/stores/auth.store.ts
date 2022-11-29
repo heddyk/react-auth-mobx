@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx'
+import { makePersistable } from 'mobx-persist-store'
 import { httpPublic } from '../services/http.service'
 
 export interface User {
@@ -26,6 +27,13 @@ class AuthStore {
 
   constructor() {
     makeAutoObservable(this)
+
+    makePersistable(this, {
+      name: 'AuthStore',
+      properties: ['acessToken', 'refreshToken', 'user'],
+      storage: window.localStorage,
+      stringify: true,
+    })
   }
 
   async login({ codigo, login, senha }: LoginRequest) {
@@ -37,7 +45,9 @@ class AuthStore {
       senha,
     })
 
-    console.log(token, tokenRefresh, usuario)
+    this.acessToken = token
+    this.refreshToken = tokenRefresh
+    this.user = usuario
   }
 }
 

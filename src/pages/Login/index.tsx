@@ -1,20 +1,56 @@
-import { useForm } from 'react-hook-form'
+import {
+  FieldErrorsImpl,
+  FieldValues,
+  useForm,
+  Controller,
+} from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { BaseSyntheticEvent } from 'react'
+import authStore, { LoginRequest } from '../../stores/auth.store'
+import { useNavigate } from 'react-router-dom'
 
 const schema = z.object({
   codigo: z.number(),
-  login: z.string(),
-  senha: z.string(),
+  login: z.string().min(1),
+  senha: z.string().min(1, {
+    message: 'asdf',
+  }),
 })
 
+const normalizeNumber = (value?: string): string | number => {
+  if (!value) return ''
+
+  return parseInt(value.replace(/[^\d]/g, ''))
+}
+
 export default function Login() {
-  const { register, handleSubmit } = useForm({
+  const navigate = useNavigate()
+  const { register, handleSubmit, control } = useForm({
     resolver: zodResolver(schema),
+    defaultValues: {
+      codigo: '',
+      login: '',
+      senha: '',
+    },
   })
 
-  const onSubmit = (data: any, e: any) => console.log(data, e)
-  const onError = (errors: any, e: any) => console.log(errors, e)
+  async function onSubmit(data: FieldValues) {
+    try {
+      await authStore.login(data as LoginRequest)
+      navigate('/inbox')
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  function onError(
+    errors: Partial<FieldErrorsImpl<{ [x: string]: any }>>,
+    event: BaseSyntheticEvent<object> | undefined
+  ) {
+    console.log(errors)
+    console.log(event)
+  }
 
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center gap-4">
@@ -24,11 +60,26 @@ export default function Login() {
         className="flex flex-col gap-3"
       >
         <label htmlFor="codigo">Código</label>
-        <input
-          type="number"
-          className="border border-gray-500 rounded"
-          placeholder="Código"
-          {...register('codigo', { required: true, valueAsNumber: true })}
+        <Controller
+          name="codigo"
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field }) => (
+            <input
+              id="codigo"
+              type="tel"
+              className="border border-gray-500 rounded"
+              placeholder="Código. 00000000"
+              inputMode="numeric"
+              autoComplete="cc-number"
+              {...field}
+              onChange={(event) => {
+                field.onChange(normalizeNumber(event.target.value))
+              }}
+            />
+          )}
         />
 
         <label htmlFor="login">Usuário</label>
