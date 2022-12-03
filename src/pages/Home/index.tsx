@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite'
-import authStore from '../../stores/auth.store'
+import authStore from '../../stores/application.store'
 
 function Home() {
   return (
