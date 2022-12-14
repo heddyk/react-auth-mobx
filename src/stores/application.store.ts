@@ -1,6 +1,5 @@
-import { autorun, makeAutoObservable } from 'mobx'
+import { makeAutoObservable } from 'mobx'
 import { makePersistable } from 'mobx-persist-store'
-import { redirect } from 'react-router-dom'
 import { httpPublic } from '../services/http.service'
 
 export interface User {
@@ -13,7 +12,6 @@ export interface LoginRequest {
   codigo: number
   login: string
   senha: string
-  lembrar: boolean
 }
 
 export interface LoginResponse {
@@ -27,7 +25,6 @@ class ApplicationStore {
   userId?: string
   workspaceId?: string
   userAccounts: Record<string, User> = {}
-  mode: 'light' | 'dark' = 'dark'
 
   constructor() {
     makeAutoObservable(this)
@@ -38,24 +35,21 @@ class ApplicationStore {
       storage: window.localStorage,
       stringify: true,
     })
-
-    makePersistable(this, {
-      name: 'theme',
-      properties: ['mode'],
-      storage: window.localStorage,
-      stringify: true,
-    })
   }
 
-  get isDark(): boolean {
-    return this.mode === 'dark'
+  get currentUser() {
+    if (this.userId) {
+      return this.userAccounts[this.userId]
+    }
+
+    return undefined
   }
 
   get isAuthenticated(): boolean {
     return !!this.acessToken
   }
 
-  async login({ codigo, login, senha, lembrar }: LoginRequest) {
+  async login({ codigo, login, senha }: LoginRequest) {
     const {
       data: { token, usuario },
     } = await httpPublic.post<LoginResponse>('/v1/login', {
@@ -64,13 +58,17 @@ class ApplicationStore {
       senha,
     })
 
-    if (lembrar) {
-      this.acessToken = token
-    }
-
+    this.acessToken = token
     this.userId = usuario.id.toString()
     this.workspaceId = usuario.empresaConectada.empresaId.toString()
     this.userAccounts[usuario.id] = usuario
+  }
+
+  logout() {
+    this.acessToken = undefined
+    this.userId = undefined
+    this.workspaceId = undefined
+    this.userAccounts = {}
   }
 }
 

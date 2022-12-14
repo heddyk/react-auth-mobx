@@ -8,8 +8,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { BaseSyntheticEvent } from 'react'
 import authStore, { LoginRequest } from '../../stores/application.store'
-import { useNavigate } from 'react-router-dom'
 import LogoExse from '../../assets/logo.svg'
+import { useNavigate } from 'react-router-dom'
 
 const schema = z.object({
   codigo: z.number(),
@@ -33,13 +33,14 @@ export default function Login() {
       codigo: '',
       login: '',
       senha: '',
-      lembrar: false,
     },
   })
 
   async function onSubmit(data: FieldValues) {
     try {
       await authStore.login(data as LoginRequest)
+
+      navigate('/', { replace: true })
     } catch (error) {
       console.log(error)
     }
@@ -145,19 +146,7 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="lembrer"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
-                  {...register('lembrar')}
-                />
-                <label htmlFor="lembre-se" className="ml-2 block text-sm">
-                  Lembre-se de mim
-                </label>
-              </div>
-
+            <div className="flex items-center justify-end">
               <div className="text-sm">
                 <a
                   href="/"
